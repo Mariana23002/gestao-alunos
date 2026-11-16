@@ -14,7 +14,7 @@ class AppNav extends HTMLElement {
     const paginaAtual = window.location.pathname.split("/").pop() || "criar.html";
 
     const links = [
-      { href: "criar.html", texto: "Cadastrar" },
+      { href: "index.html", texto: "Cadastrar" },
       { href: "consultar.html", texto: "Consultar" },
       { href: "alterar.html", texto: "Alterar" },
       { href: "deletar.html", texto: "Excluir" }
