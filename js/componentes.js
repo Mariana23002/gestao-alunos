@@ -11,7 +11,7 @@ class AppHeader extends HTMLElement {
 
 class AppNav extends HTMLElement {
   connectedCallback() {
-    const paginaAtual = window.location.pathname.split("/").pop() || "criar.html";
+    const paginaAtual = window.location.pathname.split("/").pop() || "index.html";
 
     const links = [
       { href: "index.html", texto: "Cadastrar" },
