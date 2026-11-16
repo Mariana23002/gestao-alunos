@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Consultar Alunos · ChessAcademy</title>
+  <link rel="stylesheet" href="css/estilo1.css">
+  <script src="js/componentes.js" defer></script>
+</head>
+<body>
+  <app-nav></app-nav>
+
+  <main class="login-wrapper wide">
+    <app-header></app-header>
+
+    <h1 class="titulo">Consultar alunos</h1>
+
+    <div class="card">
+      <button id="botao-consultar" type="button" class="btn-primary">Carregar registros</button>
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Nome</th>
+              <th>Rating atual</th>
+            </tr>
+          </thead>
+          <tbody id="lista-alunos"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <p id="mensagem" role="status" aria-live="polite"></p>
+  </main>
+
+  <app-footer></app-footer>
+
+  <script>
+    const SUPABASE_URL = "https://jqtdddcxplsaogfvdrpe.supabase.co";
+    const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_8xSfY9zg9z8ETzdlp1buQQ_xfVlKk2D";
+
+    const botao = document.getElementById("botao-consultar");
+    const mensagem = document.getElementById("mensagem");
+    const lista = document.getElementById("lista-alunos");
+
+    botao.addEventListener("click", consultarAlunos);
+
+    async function consultarAlunos() {
+      botao.disabled = true;
+      mensagem.textContent = "Carregando...";
+      lista.replaceChildren();
+
+      try {
+        const url = `${SUPABASE_URL}/rest/v1/alunos?select=id_aluno,nome,rating_atual&order=id_aluno.asc`;
+
+        const resposta = await fetch(url, {
+          method: "GET",
+          headers: {
+            "apikey": SUPABASE_PUBLISHABLE_KEY,
+            "Authorization": `Bearer ${SUPABASE_PUBLISHABLE_KEY}`
+          }
+        });
+
+        const texto = await resposta.text();
+
+        if (!resposta.ok) {
+          throw new Error(texto || `Erro HTTP ${resposta.status}`);
+        }
+
+        const alunos = texto ? JSON.parse(texto) : [];
+
+        if (alunos.length === 0) {
+          mensagem.textContent = "Nenhum aluno encontrado.";
+          return;
+        }
+
+        const linhas = alunos.map((aluno) => {
+          const linha = document.createElement("tr");
+
+          for (const valor of [aluno.id_aluno, aluno.nome, aluno.rating_atual]) {
+            const celula = document.createElement("td");
+            celula.textContent = valor == null ? "" : String(valor);
+            linha.appendChild(celula);
+          }
+
+          return linha;
+        });
+
+        lista.replaceChildren(...linhas);
+        mensagem.textContent = `Registros encontrados: ${alunos.length}.`;
+      } catch (erro) {
+        mensagem.textContent = `Erro ao consultar: ${erro.message}`;
+      } finally {
+        botao.disabled = false;
+      }
+    }
+  </script>
+</body>
+</html>

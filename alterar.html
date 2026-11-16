@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Alterar Aluno · ChessAcademy</title>
+  <link rel="stylesheet" href="css/estilo1.css">
+  <script src="js/componentes.js" defer></script>
+</head>
+<body>
+  <app-nav></app-nav>
+
+  <main class="login-wrapper">
+    <app-header></app-header>
+
+    <h1 class="titulo">Alterar aluno</h1>
+
+    <div class="card">
+      <form id="form">
+        <div class="form-group">
+          <label for="id_aluno">ID do aluno</label>
+          <input id="id_aluno" name="id_aluno" type="number" min="1" step="1" required>
+        </div>
+
+        <div class="form-group">
+          <label for="nome">Novo nome</label>
+          <input type="text" id="nome" name="nome" required autofocus>
+        </div>
+
+        <div class="form-group">
+          <div class="label-row">
+            <label for="rating_atual">Novo rating</label>
+          </div>
+          <input type="number" id="rating_atual" name="rating_atual" step="1" required>
+        </div>
+
+        <button type="submit" class="btn-primary">Alterar</button>
+      </form>
+    </div>
+
+    <p id="mensagem" role="status" aria-live="polite"></p>
+  </main>
+
+  <app-footer></app-footer>
+
+  <script>
+    const SUPABASE_URL = "https://jqtdddcxplsaogfvdrpe.supabase.co";
+    const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_8xSfY9zg9z8ETzdlp1buQQ_xfVlKk2D";
+
+    const form = document.getElementById("form");
+    const mensagem = document.getElementById("mensagem");
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      mensagem.textContent = "Salvando alterações...";
+
+      const id = Number(form.elements.id_aluno.value);
+      const rating = Number(form.elements.rating_atual.value);
+
+      if (!Number.isInteger(id) || !Number.isInteger(rating)) {
+        mensagem.textContent = "ID e rating devem ser números inteiros.";
+        return;
+      }
+
+      const filtro = new URLSearchParams({
+        id_aluno: `eq.${id}`
+      });
+
+      const alunoAtualizado = {
+        nome: form.elements.nome.value.trim(),
+        rating_atual: rating
+      };
+
+      try {
+        const resposta = await fetch(
+          `${SUPABASE_URL}/rest/v1/alunos?${filtro.toString()}`,
+          {
+            method: "PATCH",
+            headers: {
+              "apikey": SUPABASE_PUBLISHABLE_KEY,
+              "Authorization": `Bearer ${SUPABASE_PUBLISHABLE_KEY}`,
+              "Content-Type": "application/json",
+              "Prefer": "return=representation"
+            },
+            body: JSON.stringify(alunoAtualizado)
+          }
+        );
+
+        const resultado = await resposta.json().catch(() => null);
+
+        if (!resposta.ok) {
+          throw new Error(resultado?.message || `Erro HTTP ${resposta.status}`);
+        }
+
+        if (!resultado || resultado.length === 0) {
+          mensagem.textContent =
+            "Nenhum registro foi alterado. Verifique o ID e as permissões de acesso.";
+          return;
+        }
+
+        mensagem.textContent = `Aluno ${resultado[0].id_aluno} atualizado com sucesso.`;
+      } catch (erro) {
+        mensagem.textContent = `Não foi possível atualizar: ${erro.message}`;
+      }
+    });
+  </script>
+</body>
+</html>
